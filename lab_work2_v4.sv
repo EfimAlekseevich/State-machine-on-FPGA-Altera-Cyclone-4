@@ -122,10 +122,45 @@ module digits_tube(
 
 endmodule
 
-module always_one(
-	output one);
+
+module rattle_delay
+	#(parameter n = 50) //num of inspections
+	(input CLK,
+	input in,
+	output out);
 	
-	assign one = 1;
+	byte unsigned sum;
+	
+	always_ff @(posedge CLK)
+		if (in)
+			if (sum == n) out <= 1;
+			else sum <= sum + 1;
+		else
+			begin
+				sum <= 0;
+				out <= 0;
+			end
+
+endmodule
+
+
+module frequency_divider
+	#(parameter divider = 50000) //divider < 2^16
+	(input CLK_in,
+	output CLK_out);
+	
+	shortint unsigned counter;
+	shortint unsigned divider_ = divider >> 1;
+		
+	always_ff @(posedge CLK_in)
+		begin
+			counter = counter + 1;
+			if (counter == divider_)
+				begin
+					counter <= 0;
+					CLK_out <= ~CLK_out;
+				end
+		end
 
 endmodule
 
